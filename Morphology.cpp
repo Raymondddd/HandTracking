@@ -1,5 +1,6 @@
-/*
-* Morphology operation on Gray Image
+/**
+	Morphology operation on Gray Image
+	@author Lei Liu
 */
 
 #include <iostream>

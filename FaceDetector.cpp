@@ -1,6 +1,7 @@
 /**
-* FaceDetector.cpp
-* Class for detecting the face from an RGB resized image
+	FaceDetector.cpp
+	Class for detecting the face from an RGB resized image
+	@author Lei Liu
 */
 
 #include <opencv2/opencv.hpp>

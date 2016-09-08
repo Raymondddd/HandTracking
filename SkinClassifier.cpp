@@ -1,6 +1,7 @@
-/*
-* SkinClassifier.cpp
-* Class for classifying the skin area of an RGB image using Naive Bayes Classifier and YUV channels
+/**
+	SkinClassifier.cpp
+	Class for classifying the skin area of an RGB image using Naive Bayes Classifier and YUV channels
+	@author Lei Liu
 */
 
 #include <iostream>
@@ -18,15 +19,15 @@ class SkinClassifier
 {
 
 private:
-	static const int num_of_bins = 256; //the number of bins for color histogram
-	int color_Hist[num_of_bins][num_of_bins]; //counting the apparence of each color
-	int skin_Hist[num_of_bins][num_of_bins]; //counting the apparence of skin color
-	int num_color; //total number of all colors
-	int num_skin; //total number of all skin colors
-	double probab[num_of_bins][num_of_bins]; //probability of colro being skin color
+	static const int num_of_bins = 256; //the number of bins for colour histogram
+	int color_Hist[num_of_bins][num_of_bins]; //counting the appearance of each colour
+	int skin_Hist[num_of_bins][num_of_bins]; //counting the appearance of skin colour
+	int num_color; //total number of all colours
+	int num_skin; //total number of all skin colours
+	double probab[num_of_bins][num_of_bins]; //probability of colour being skin colour
 
-	float Tmax;//upper threshold of skin color probability
-	float Tmin;//low threshold of skin color probability
+	float Tmax;//upper threshold of skin colour probability
+	float Tmin;//low threshold of skin colour probability
 	string prob_file_path;//file name for storing the probability output.
 	
 public:
@@ -50,19 +51,19 @@ public:
 		cout << "Set thresholds between: " << Tmax << " -- " << Tmin << endl;
 	}
 
-	//train classifier with a folders contianing both training image and ground truth image
-	//default dataset folder is "../dataset/skin_dataset/familyPhoto/"
-	void train( string dataset_folder = "../dataset/skin_dataset/FamilyPhoto/")
+	//train classifier with a folders containing both training image and ground truth image
+	void train( string dataset_folder )
 	{	
-
 		cv::Mat train_image;
 		cv::Mat truth_image;
-		
-		//load a pair of training image and turth image from the folder
+		//load a pair of training image and truth image from the folder
+		string train_folder = dataset_folder + "train/";
+		string truth_folder = dataset_folder + "truth/";
+
 		DIR *dir;
 		struct dirent *entry;
 		//load training images fold, get list of images name
-		dir = opendir( dataset_folder.c_str() );
+		dir = opendir( train_folder.c_str() );
 		if(dir)
 		{
 			while( entry = readdir(dir) )
@@ -70,9 +71,9 @@ public:
 				if( strcmp( entry->d_name, "." ) != 0 && strcmp( entry->d_name, ".." ) != 0 )
 				{
 					std::string temp(entry->d_name);
-					//concact train image and truth image file path
-					std::string train_file_path = dataset_folder + temp;
-					std::string truth_file_path = dataset_folder + "GroundTruth/" + temp.replace( (temp.length()-3),3, "png");
+					//concatenate train image and truth image file path
+					std::string train_file_path = train_folder + temp;
+					std::string truth_file_path = truth_folder + temp.replace( (temp.length()-3),3, "png");
 					//read image file to Mat
 					train_image = cv::imread( train_file_path, CV_LOAD_IMAGE_COLOR);//8UC3 BGR format image
 					truth_image = cv::imread( truth_file_path, CV_LOAD_IMAGE_GRAYSCALE);//8UC1 one intensity image
@@ -87,8 +88,7 @@ public:
 						std::cout << "Could not read or find image: " << truth_file_path << std::endl;
 						continue;
 					}
-					//update the statistic of color hist and skin color hist
-					// cout << "Update with " << train_file_path << endl;
+					//update the statistic of colour hist and skin colour hist
 					updateStatistic(train_image, truth_image);
 				}
 			}
@@ -100,12 +100,12 @@ public:
 		}
 	}
 	
-	//input a pair of training image and truth image, update the statistic of pixels
+	//input a pair of training image and truth image, update the statistic of pixels' colour
 	void updateStatistic( cv::Mat &train_image, cv::Mat &truth_image )
 	{
 		//convert train image to UV model
 		cv::Mat uv;
-		BGR2UV( train_image, uv );//get 8SC2 mat
+		BGR2UV( train_image, uv );//get 8SC2 mat for UV channels
 		for(int i=0; i < uv.rows; i++)
 		{
 			for( int j=0; j < uv.cols; j++)
@@ -114,7 +114,7 @@ public:
 				cv::Vec2b intensity = uv.at<cv::Vec2b>( i, j );
 				int u = intensity.val[0];
 				int v = intensity.val[1];
-				//update the color histogram statistic
+				//update the colour histogram statistic
 				color_Hist[u][v]++;
 				num_color++;
 				//get corresponding label for this pixel
@@ -129,11 +129,11 @@ public:
 		}
 	}
 
-	//convert 8UC3 BGR color image to 8UC2 image mat contains only the UV channels from YUV format
+	//convert 8UC3 BGR colour image to 8UC2 image mat contains only the UV channels from YUV format
 	void BGR2UV(cv::Mat &src_img, cv::Mat &dst_img)
 	{
 		cv::Mat yuv;
-		//convert BGR color image to YCrCv color space
+		//convert BGR colour image to YCrCv color space
 		cv::cvtColor(src_img, yuv, CV_BGR2YCrCb);
 		vector<cv::Mat> channels;
 		cv::split(yuv, channels);
@@ -143,8 +143,8 @@ public:
 	}
 
 	/*	
-	* write each pair of pixel and its statistic and probability being a skin color as one line.
-	* format: U-component V-component color_histogram skin_histogram probability
+	* write each pair of pixel and its statistic and probability being a skin colour as one line.
+	* format: U-component V-component colour_histogram skin_histogram probability
 	* format example: 128 128 10000 1000 0.1
 	*/	
 	void writeProbab(string filename = "probability.txt")
@@ -155,10 +155,10 @@ public:
 		{
 			for(int j=0; j<num_of_bins; j++)
 			{
-				//calculate probability of each colro being a skin color
+				//calculate probability of each colour being a skin colour
 				int color_count = color_Hist[i][j];
 				int skin_count = skin_Hist[i][j];
-				//post probability of P(s|c) a color pixel being skin color
+				//post probability of P(s|c) a colour pixel being skin colour
 				if( color_count != 0 ) probab[i][j] = (double)skin_count / (double)color_count;			
 				//write statistic and probability into file
 				file << i << " " << j << " " << color_count << " " << skin_count << " " << probab[i][j] << "\n";
@@ -167,16 +167,17 @@ public:
 		file.close();
 	}
 	
+	//calculate the probability with Bayesian Theorem
 	void calculProbab()
 	{
 		for(int i=0; i<num_of_bins; i++)
 		{
 			for(int j=0; j<num_of_bins; j++)
 			{
-				//calculate probability of each colro being a skin color
+				//calculate probability of each colour being a skin colour
 				int color_count = color_Hist[i][j];
 				int skin_count = skin_Hist[i][j];
-				//post probability of P(s|c) a color pixel being skin color
+				//post probability of P(s|c) a colour pixel being skin colour
 				if( color_count != 0 ) probab[i][j] = (double)skin_count / (double)color_count;
 			}
 		}
@@ -213,18 +214,18 @@ public:
 	}
 	
 	/*
-	* Detect skin color area and draw correspoding ellipses 
+	* Detect skin colour area and draw corresponding ellipses 
 	*/
 	void detect( cv::Mat &original, cv::Mat &bwimg )
 	{	
 		// cv::imshow("Original", original);
 		cv::Mat dst( original.rows, original.cols, CV_8UC1);
 
-		//detect skin color pixels
+		//detect skin colour pixels
 		detectSkin(original, dst);
-		cv::imshow("Detected Skin Color", dst);
+		cv::imshow("Detected Skin Colour", dst);
 
-		//connect the potential skin color pixel(probability between Tman and Tmin)
+		//connect the potential skin colour pixel(probability between Tman and Tmin)
 		connectPotential(dst);
 		cv::imshow("Connect potential pixels", dst);
 
@@ -236,7 +237,7 @@ public:
 	}
 	
 	/*
-	* Classify the skin color pixel from the original
+	* Classify the skin colour pixel from the original
 	*/
 	void detectSkin(cv::Mat &original, cv::Mat &dst)
 	{
@@ -252,24 +253,24 @@ public:
 				int v = intensity.val[1];
 				//get probability from mapper
 				double probability = probab[u][v];
-				if( probability > Tmax )//skin color
+				if( probability > Tmax )//skin colour
 				{
-					dst.at<uchar>(i, j) = (uchar)255;//seed skin color point
+					dst.at<uchar>(i, j) = (uchar)255;//seed skin colour point
 				}
 				else if( probability < Tmin )
 				{
-					dst.at<uchar>(i, j) = (uchar)0;//no skin color
+					dst.at<uchar>(i, j) = (uchar)0;//no skin colour
 				}
 				else
 				{
-					dst.at<uchar>(i, j) = (uchar)128;//potential skin color
+					dst.at<uchar>(i, j) = (uchar)128;//potential skin colour
 				}
 			}
 		}
 	}
 
 	/*
-	* connect those potential skin color pixels
+	* connect those potential skin colour pixels
 	*/
 	void connectPotential(cv::Mat &img)
 	{
@@ -279,7 +280,7 @@ public:
 			for( int j=0; j < img.cols; j++)
 			{
 				int pixel = (int)img.at<uchar>(i, j);
-				if(pixel == 128) //potential skin-color pixel
+				if(pixel == 128) //potential skin-colour pixel
 				{
 					neightbourFiltering(img, i, j, radius);
 				}
@@ -288,10 +289,10 @@ public:
 	}
 
 	/**
-	* neightbour filtering, three conditions
-	* 1. immediate neighbour is skin color(255), set as skin colors
-	* 2. immediate neighbours have not skin color, but has non-skin color(0), set as non-skin color
-	* 3. immediate neighbours are all potential skin color(128), look for second neighbours, repeat these conditions.
+	* neighbour filtering, three conditions
+	* 1. immediate neighbour is skin colour(255), set as skin colours
+	* 2. immediate neighbours have not skin colour, but has non-skin colour(0), set as non-skin colour
+	* 3. immediate neighbours are all potential skin colour(128), look for second neighbours, repeat these conditions.
 	*/
 	void neightbourFiltering(cv::Mat &img, int point_i, int point_j, int radius )
 	{	
@@ -305,8 +306,8 @@ public:
 			if( m >= img.rows || m < 0 ) continue; //check vertical boundary
 			for(int n=j-radius; n<=j+radius; n++)
 			{
-				if( n >= img.cols || n < 0 ) continue; //check horizental boundary
-				//immidiate neightbour is skin color
+				if( n >= img.cols || n < 0 ) continue; //check horizontal boundary
+				//immediate neighbour is skin colour
 				int neightbour = (int)img.at<uchar>(m, n);
 				if( neightbour == 255 ) 
 				{
@@ -314,8 +315,6 @@ public:
 					is_skin = true;
 					break;
 				}
-				// if( neightbour == 255 ) num_skin_neightbour++;
-				// if( neightbour == 0 ) num_non_skin_neightbour++;
 			}
 		}
 		if(is_skin == false) img.at<uchar>(i, j) = (uchar)0;
@@ -373,15 +372,13 @@ public:
 		this->connectPotential(fs);
 		cv::Mat uv; 
 		this->BGR2UV(face, uv);
-		// cv::imshow("Face", face);
-		// cv::imshow("Face skin", fs);
 		// iterate each pixel
 		for(int r=0; r<fs.rows; r++)
 		{
 			for(int c=0; c<fs.cols; c++)
 			{
 				int skn = (int)(fs.at<uchar>(r, c));
-				if(skn > 0)//skin color or potential skin color
+				if(skn > 0)//skin colour or potential skin colour
 				{	
 					//get related UV value of this position
 					cv::Vec2b intensity = uv.at<cv::Vec2b>( r, c );
@@ -400,13 +397,13 @@ public:
 
 	//n-fold cross-validation for testing skin detector
 	//total 78 skin images, about 15 images each fold
-	void testSkinDetector(string dataset_folder = "../dataset/skin/", int num_fold = 5)
+	void testSkinDetector(string dataset_folder = "data/skin_colour/", int num_fold = 5, float maxT = 0.5, float minT = 0.10)
 	{
 		cout << '\n' << '\n';
 		cout << "cross-validation for skin detector on images in " << dataset_folder << endl;
 		this->clear_statistic();
-		this->Tmax = 0.5;
-		this->Tmin = 0.10;
+		this->Tmax = manT;
+		this->Tmin = minT;
 		cout << "Thresholds between: " << Tmax << "----" << Tmin << endl;
 		//read all file paths
 		vector<string> train_files;
@@ -420,7 +417,7 @@ public:
 				if( strcmp( entry->d_name, "." ) != 0 && strcmp( entry->d_name, ".." ) != 0 )
 				{
 					std::string temp(entry->d_name);
-					//concact train image and truth image file path
+					//concatenate train image and truth image file path
 					std::string train_file_path = dataset_folder + temp;
 					std::string truth_file_path = dataset_folder + "GroundTruth/" + temp.replace( (temp.length()-3),3, "png");
 					//read image file to Mat
@@ -497,7 +494,7 @@ public:
 				cv::Mat truth_image = cv::imread( truth_file_path, CV_LOAD_IMAGE_GRAYSCALE);//8UC1 one intensity image
 				if( (!test_image.data) || (!truth_image.data) ) continue;
 				cv::Mat dst( test_image.rows, test_image.cols, CV_8UC1);
-				//detect skin color pixels
+				//detect skin colour pixels
 				this->detectSkin(test_image, dst);
 				this->connectPotential(dst);
 				//compare with truth image

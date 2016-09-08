@@ -1,7 +1,6 @@
 /** 
 	TrackingProcess.cpp
 	Process of tracking objects over time with detected images
-
 	@author Lei Liu
 */
 
@@ -135,67 +134,67 @@ public:
 		return result;
 	}
 
-	vector< pair<int, int> > maxContour(vector< pair<int, int> > &blob)
-	{
-		map< int, pair<int, int> > outContour;
-		int min_x = 10000;
-		int max_x = 0;
-		for(int i=0; i<blob.size(); i++)
-		{
-			int x = blob[i].first;
-			int y = blob[i].second;
-			if(x<min_x)
-				min_x = x;
-			if(x>max_x)
-				max_x = x;
+	// vector< pair<int, int> > maxContour(vector< pair<int, int> > &blob)
+	// {
+	// 	map< int, pair<int, int> > outContour;
+	// 	int min_x = 10000;
+	// 	int max_x = 0;
+	// 	for(int i=0; i<blob.size(); i++)
+	// 	{
+	// 		int x = blob[i].first;
+	// 		int y = blob[i].second;
+	// 		if(x<min_x)
+	// 			min_x = x;
+	// 		if(x>max_x)
+	// 			max_x = x;
 
-			if(outContour.find(x) == outContour.end()) //new contour points
-				outContour.insert( make_pair( x, make_pair(y, y) ) );
-			else
-			{
-				int min_y = outContour.at(x).first;
-				int max_y = outContour.at(x).second;
-				if( y <= min_y)
-					min_y = y;
-				if( y >= max_y)
-					max_y = y;
-				outContour.at(x).first = min_y;
-				outContour.at(x).second = max_y;
-			}
-		}
+	// 		if(outContour.find(x) == outContour.end()) //new contour points
+	// 			outContour.insert( make_pair( x, make_pair(y, y) ) );
+	// 		else
+	// 		{
+	// 			int min_y = outContour.at(x).first;
+	// 			int max_y = outContour.at(x).second;
+	// 			if( y <= min_y)
+	// 				min_y = y;
+	// 			if( y >= max_y)
+	// 				max_y = y;
+	// 			outContour.at(x).first = min_y;
+	// 			outContour.at(x).second = max_y;
+	// 		}
+	// 	}
 
-		vector< pair<int, int> > contour;
-		for(map< int, pair<int, int> >::iterator out=outContour.begin(); out!=outContour.end(); ++out)
-		{
-			int x = out->first;
-			pair<int, int> yy = out->second;
-			int y1 = yy.first;
-			int y2 = yy.second;
-			contour.push_back( make_pair(x, y1) );
-			contour.push_back( make_pair(x, y2) );
-		}
+	// 	vector< pair<int, int> > contour;
+	// 	for(map< int, pair<int, int> >::iterator out=outContour.begin(); out!=outContour.end(); ++out)
+	// 	{
+	// 		int x = out->first;
+	// 		pair<int, int> yy = out->second;
+	// 		int y1 = yy.first;
+	// 		int y2 = yy.second;
+	// 		contour.push_back( make_pair(x, y1) );
+	// 		contour.push_back( make_pair(x, y2) );
+	// 	}
 
-		//add upper boundary
-		for(int i=outContour.at(min_x).first; i<outContour.at(min_x).second; ++i)
-			contour.push_back( make_pair(min_x, i) );
-		for(int i=outContour.at(max_x).first; i<outContour.at(max_x).second; ++i)
-			contour.push_back( make_pair(max_x, i) );
+	// 	//add upper boundary
+	// 	for(int i=outContour.at(min_x).first; i<outContour.at(min_x).second; ++i)
+	// 		contour.push_back( make_pair(min_x, i) );
+	// 	for(int i=outContour.at(max_x).first; i<outContour.at(max_x).second; ++i)
+	// 		contour.push_back( make_pair(max_x, i) );
 
-		return contour;
-	}
+	// 	return contour;
+	// }
 
-	cv::RotatedRect contourEllipse(vector< pair<int, int> > &contour)
-	{
-		vector< cv::Point > cont;
-		for(int i=0; i<contour.size(); i++)
-		{
-			int x = contour[i].first;
-			int y = contour[i].second;
-			cont.push_back( cv::Point( y, x ) );
-		}
-		cv::RotatedRect ellipse = cv::fitEllipse( cv::Mat(cont) );
-		return ellipse;
-	}
+	// cv::RotatedRect contourEllipse(vector< pair<int, int> > &contour)
+	// {
+	// 	vector< cv::Point > cont;
+	// 	for(int i=0; i<contour.size(); i++)
+	// 	{
+	// 		int x = contour[i].first;
+	// 		int y = contour[i].second;
+	// 		cont.push_back( cv::Point( y, x ) );
+	// 	}
+	// 	cv::RotatedRect ellipse = cv::fitEllipse( cv::Mat(cont) );
+	// 	return ellipse;
+	// }
 
 	void showEllipses(cv::Mat &original, string framename = "")
 	{

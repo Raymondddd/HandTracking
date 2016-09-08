@@ -1,6 +1,7 @@
-/*
-* Hand Tracking System
-* main function
+/**
+	Hand Tracking System
+	main function
+	@author Lei Liu
 */
 
 #include <iostream>
@@ -37,6 +38,16 @@ public:
 	{	}
 
 	/**
+	*
+	*/
+	void offLineTrain(string folder = "data/skin_colour/" )
+	{
+		skinClassifier.clear_statistic(); //clear statisic result
+		skinClassifier.train(folder); //train with specificed folder
+		skinClassifier.writeProbab(); //save trained probability into file
+	}
+
+	/**
 	 Test the detection functions
 	*/
 	void detectionTest()
@@ -55,15 +66,7 @@ public:
 		cv::imshow("Truth", truth);
 	}
 
-	void offLineTrain()
-	{
-		SkinClassifier classifier;
-		classifier.clear_statistic(); //clear statisic result
-		classifier.train(); //train with default folder (FamilyPhoto)
-		classifier.train("../dataset/skin_dataset/FacePhoto/"); //train with specificed folder
-		classifier.writeProbab(); //save trained probability into file
-	}
-
+	//test ellipse fitting for each region of interest
 	void ellipseTest()
 	{
 		//test ellipse functions
@@ -82,7 +85,7 @@ public:
 			}
 		}
 
-		mat = cv::imread("temp/1.png", CV_LOAD_IMAGE_GRAYSCALE);
+		mat = cv::imread("data/skin_colour/sarah.png", CV_LOAD_IMAGE_GRAYSCALE);
 		cout << mat.size() << endl;	
 		// cv::namedWindow("original", CV_WINDOW_AUTOSIZE);
 		// cv::imshow("original", mat );
@@ -152,6 +155,7 @@ public:
 		cv::imshow("el", mat );
 	}
 
+	//test tracking process
 	void trackingTest()
 	{
 		TrackingProcess pro;
@@ -250,6 +254,7 @@ public:
 		cv::imshow("fifthFrame", fifth);
 	}	
 
+	//test face detection in real-time camera
 	void faceTest(string videoName, float rotateAngle)
 	{		
 		//get a handle to the video device, load video as fault
@@ -265,17 +270,14 @@ public:
 			std::cout << "Video or Camera cannot be opened." << endl;
 			return;
 		}
-
 		FaceDetector faceDetector; //create face detector
 		faceDetector.load();
-
 		int winWidth = 480;
 		int winHeight = 320;
 		string winName = "Hand Tracking";
 		//create window for displaying images
 		cv::namedWindow(winName, CV_WINDOW_AUTOSIZE);
 		cv::resizeWindow(winName, winWidth, winHeight);
-		
 		cv::Mat frame; //Holds the current fram from the Video device
 		bool isFirst = true;
 		for(;;)
@@ -283,7 +285,6 @@ public:
 			videoCap >> frame;
 			if( !frame.data )
 				break;
-
 			//clone the current frame and resize to default size
 			cv::Mat original = frame.clone();
 			if( rotateAngle != 0) //rotate original frame
@@ -311,7 +312,7 @@ public:
 				continue;
 			if(key == 27)//Exit the loop bt pressing "Esc"
 				break;
-		}// end of video tracking------------------------------
+		}
 	}
 
 	void cameraTest(string videoName, float rotateAngle, int winWidth, int winHeight, string winName)
@@ -536,7 +537,6 @@ public:
 				cv::Mat face(img, faces[f]);
 				skinClassifier.adaptive(face);
 			}
-
  	 	}
  	 	cout << "Finished online training" << endl;
  	 	
@@ -654,6 +654,7 @@ public:
 		}// end of video tracking------------------------------
 	}
 
+	//online training
 	void reTrain(string folder)
 	{
 		vector<string> filenames;
@@ -770,7 +771,7 @@ void on_sizeThresh(int size, void *userData)
 
 //mian function, choice for either load camera or read local video
 //capture frame for both skin detection and face detection
-int main0(int argc, const char *argv[])
+int main(int argc, const char *argv[])
 {
 	/*
 	* ---------------------------------------------
@@ -823,8 +824,8 @@ int main0(int argc, const char *argv[])
 	return 0;
 }
 
-
-int main(int argc, const char *argv[])
+//for evaluation
+int main0(int argc, const char *argv[])
 {
 	string folder = "testing/cafe_1/";
 	// hand.offlineTesting();

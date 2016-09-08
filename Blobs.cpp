@@ -1,6 +1,7 @@
-/*
-* Blobs.cpp
-* produce current skin areas and corresdonding ellipses from current bwimg
+/**
+	Blobs.cpp
+ 	produce current skin areas and corresdonding ellipses from current bwimg
+ 	@author Lei Liu
 */
 
 #include <iostream>
